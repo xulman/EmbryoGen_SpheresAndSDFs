@@ -119,16 +119,39 @@ def connect_to_SDF_oraculum() -> None:
     return None
 
 
+def report_SDF_cloud_surface(blender:BlenderDisplay, version:int) -> None:
+    # TODO don't know how zero-level set is read out
+    # make up a couple of points to have now something to show
+    cloudPoint = []
+    for q,w in [[x,y] for x in range(10) for y in range(10)]:
+        cloudPoint.append([q,w,5])
+
+    msg = blender.create_graphics_batch("cloud point")
+    for x,y,z in cloudPoint:
+        sphParams = PROTOCOL.SphereParameters()
+        sphParams.centre.x = x
+        sphParams.centre.y = y
+        sphParams.centre.z = z+ 0.1*version
+        sphParams.radius = 0.5
+        sphParams.time = version
+        sphParams.colorXRGB = 0xAAAAAA
+        msg.spheres.append(sphParams)
+    blender.send_graphics_batch(msg)
+
+
 def simulation(blender_display:BlenderDisplay, sdf_query_machine):
     cell = Cell()
     cell.report_curr_geometry(blender_display)
 
     key = ''
+    display_time = 1
     while key != 'q':
          cell.update_pos(sdf_query_machine)
          cell.report_curr_geometry(blender_display)
+         report_SDF_cloud_surface(blender_display, display_time)
 
          key = input("press a key to advance, 'q' to quit: ")
+         display_time += 1
 
 
 try:
