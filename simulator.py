@@ -70,18 +70,28 @@ class Cell:
         self.geometry.append( Sphere(3,  0, 0,0, 3) )
         self.geometry.append( Sphere(4, -3, 3,0, 3) )
         self.geometry.append( Sphere(5, -3, 7,0, 3) )
+        self.version = 0 #aka time
 
         self.this_shape_latent_code = 123456
 
 
-    def report_curr_geometry(self, blender_server):
+    def report_curr_geometry(self, blender:BlenderDisplay) -> None:
         # iterates over the spheres and "beams" them to Blender for vizu
-
-        # for now only, report on the console (TODO)
         print("Cell's current geometry:")
+        msg = blender.create_graphics_batch("cell geometry")
         for s in self.geometry:
             print(f"  Sphere {s.id} now at {s.curr_x}, {s.curr_y}, {s.curr_z}, and with radius {s.curr_r}")
-        pass
+            #
+            sphParams = PROTOCOL.SphereParameters()
+            sphParams.centre.x = s.curr_x
+            sphParams.centre.y = s.curr_y
+            sphParams.centre.z = s.curr_z
+            sphParams.radius = s.curr_r
+            sphParams.time = self.version
+            sphParams.colorIdx = s.id
+            msg.spheres.append(sphParams)
+        blender.send_graphics_batch(msg)
+        self.version += 1
 
 
     def update_pos(self, sdf_query_machine):
