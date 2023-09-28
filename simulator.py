@@ -3,6 +3,33 @@ import buckets_with_graphics_pb2 as PROTOCOL
 import buckets_with_graphics_pb2_grpc
 
 
+class BlenderDisplay:
+    def __init__(self, url, session_name):
+        self.blender_server = url
+        self.session_name = session_name
+        self.comm = buckets_with_graphics_pb2_grpc.ClientToServerStub( insecure_channel(url) )
+
+    def greet_server(self) -> None:
+        self.clientURL = "no callback"
+        self.clientName = "spheres tracking SDF_of_t"
+        #
+        clientGreeting = PROTOCOL.ClientHello()
+        clientGreeting.clientID.clientName = self.clientName
+        clientGreeting.returnURL = self.clientURL
+        self.comm.introduceClient(clientGreeting)
+
+    def create_graphics_batch(self, content_title:str) -> PROTOCOL.BatchOfGraphics:
+        msg = PROTOCOL.BatchOfGraphics()
+        msg.clientID.clientName = self.clientName
+        msg.collectionName = self.session_name
+        msg.dataName = content_title
+        msg.dataID = 1
+        return msg
+
+    def send_graphics_batch(self, the_batch:PROTOCOL.BatchOfGraphics) -> None:
+        self.comm.addGraphics(iter([the_batch]))
+
+
 class Sphere:
     def __init__(self, sphere_id, x,y,z, radius):
         self.id = sphere_id
