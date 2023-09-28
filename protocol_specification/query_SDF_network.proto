@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package SDF_query_protocol;
+option java_package = "cz.it4i.ulman.transfers.sdf.protocol";
+
+
+service ClientToSDF {
+	rpc queryOne(QueryMsg) returns (SDFvalue) {}
+	rpc queryStream(stream QueryMsg) returns (stream SDFvalue) {}
+}
+
+
+message QueryMsg {
+	float x = 1;
+	float y = 2;
+	float z = 3;
+	uint64 latent_code = 4;
+}
+
+
+message SDFvalue {
+	QueryMsg input = 1;
+	float sdf_output = 2;
+}
