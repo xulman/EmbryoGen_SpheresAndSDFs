@@ -3,7 +3,18 @@ import buckets_with_graphics_pb2 as PROTOCOL
 import buckets_with_graphics_pb2_grpc
 
 
-class BlenderDisplay:
+class Display:
+    def greet_server(self) -> None:
+        pass
+
+    def create_graphics_batch(self, content_title:str) -> PROTOCOL.BatchOfGraphics:
+        return PROTOCOL.BatchOfGraphics()
+
+    def send_graphics_batch(self, the_batch:PROTOCOL.BatchOfGraphics) -> None:
+        pass
+
+
+class BlenderDisplay(Display):
     def __init__(self, url, session_name):
         self.blender_server = url
         self.session_name = session_name
@@ -75,7 +86,7 @@ class Cell:
         self.this_shape_latent_code = 123456
 
 
-    def report_curr_geometry(self, blender:BlenderDisplay) -> None:
+    def report_curr_geometry(self, blender:Display) -> None:
         # iterates over the spheres and "beams" them to Blender for vizu
         print("Cell's current geometry:")
         msg = blender.create_graphics_batch("cell geometry")
@@ -108,7 +119,7 @@ class Cell:
 
 
 
-def connect_to_Blender(session_name:str) -> BlenderDisplay:
+def connect_to_Blender(session_name:str) -> Display:
     serverURL = "localhost:9083"
     blender_display = BlenderDisplay(serverURL, session_name)
     blender_display.greet_server()
@@ -119,7 +130,7 @@ def connect_to_SDF_oraculum() -> None:
     return None
 
 
-def report_SDF_cloud_surface(blender:BlenderDisplay, version:int) -> None:
+def report_SDF_cloud_surface(blender:Display, version:int) -> None:
     # TODO don't know how zero-level set is read out
     # make up a couple of points to have now something to show
     cloudPoint = []
@@ -139,7 +150,7 @@ def report_SDF_cloud_surface(blender:BlenderDisplay, version:int) -> None:
     blender.send_graphics_batch(msg)
 
 
-def simulation(blender_display:BlenderDisplay, sdf_query_machine):
+def simulation(blender_display:Display, sdf_query_machine):
     cell = Cell()
     cell.report_curr_geometry(blender_display)
 
@@ -155,9 +166,10 @@ def simulation(blender_display:BlenderDisplay, sdf_query_machine):
 
 
 try:
-    blender_display = connect_to_Blender("default view")
+    display = Display() # sends nothing, requires no Blender
+    #display = connect_to_Blender("default view")
     sdf_query_machine = connect_to_SDF_oraculum()
-    simulation(blender_display, sdf_query_machine)
+    simulation(display, sdf_query_machine)
 
 except RpcError as e:
     print("Some connection error, details follow:")
