@@ -3,6 +3,9 @@ import buckets_with_graphics_pb2 as PROTOCOL
 import buckets_with_graphics_pb2_grpc
 
 
+da_latent_code = 123456
+
+
 class Display:
     def greet_server(self) -> None:
         pass
@@ -83,7 +86,7 @@ class Cell:
         self.geometry.append( Sphere(5, -3, 7,0, 3) )
         self.version = 0 #aka time
 
-        self.this_shape_latent_code = 123456
+        self.this_shape_latent_code = da_latent_code
 
 
     def report_curr_geometry(self, blender:Display) -> None:
