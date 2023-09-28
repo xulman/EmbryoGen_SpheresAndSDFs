@@ -97,16 +97,44 @@ class Cell:
             s.update_current_pos()
 
 
-def simulation():
+
+def connect_to_Blender(session_name:str) -> BlenderDisplay:
+    serverURL = "localhost:9083"
+    blender_display = BlenderDisplay(serverURL, session_name)
+    blender_display.greet_server()
+    return blender_display
+
+
+def connect_to_SDF_oraculum() -> None:
+    return None
+
+
+def simulation(blender_display:BlenderDisplay, sdf_query_machine):
     cell = Cell()
-    cell.report_curr_geometry(None)
+    cell.report_curr_geometry(blender_display)
 
     key = ''
     while key != 'q':
-         cell.update_pos(None)
-         cell.report_curr_geometry(None)
+         cell.update_pos(sdf_query_machine)
+         cell.report_curr_geometry(blender_display)
 
          key = input("press a key to advance, 'q' to quit: ")
 
 
-simulation()
+try:
+    blender_display = connect_to_Blender("default view")
+    sdf_query_machine = connect_to_SDF_oraculum()
+    simulation(blender_display, sdf_query_machine)
+
+except RpcError as e:
+    print("Some connection error, details follow:")
+    print("==============")
+    print(e)
+    print("==============")
+except Exception as e:
+    print("Some general error, details follow:")
+    print("==============")
+    print(e)
+    print("==============")
+
+print("done.")
