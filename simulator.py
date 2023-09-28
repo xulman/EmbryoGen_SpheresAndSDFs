@@ -1,6 +1,7 @@
 from grpc import insecure_channel, RpcError
 import buckets_with_graphics_pb2 as PROTOCOL
 import buckets_with_graphics_pb2_grpc
+from SDF_CLI_client import Talker as SDF
 
 
 da_latent_code = 123456
@@ -66,9 +67,12 @@ class Sphere:
         self.curr_r = self.next_r
 
 
-    def update_future_pos(self, sdf_query_machine, latent_code):
-        # TODO, for now a fake translation to the right...
-        # normally, however, it should ask the 'sdf_query_machine' and figure out the movement
+    def update_future_pos(self, sdf_query_machine:SDF, latent_code):
+        # ask the 'sdf_query_machine' and figure out the movement
+        delta = sdf_query_machine.askOne(self.curr_x, self.curr_y, self.curr_z);
+        # maybe query around to get direction of the shift whose magnitude is |delta|
+
+        # TODO: but for now, a fake translation to the right...
         self.next_x = self.curr_x + 1
         self.next_y = self.curr_y
         self.next_z = self.curr_z
@@ -108,7 +112,7 @@ class Cell:
         self.version += 1
 
 
-    def update_pos(self, sdf_query_machine):
+    def update_pos(self, sdf_query_machine:SDF):
         # update each sphere, one by one
         for s in self.geometry:
             s.update_future_pos(sdf_query_machine, self.this_shape_latent_code)
@@ -129,8 +133,8 @@ def connect_to_Blender(session_name:str) -> Display:
     return blender_display
 
 
-def connect_to_SDF_oraculum() -> None:
-    return None
+def connect_to_SDF_oraculum() -> SDF:
+    return SDF("localhost:10101", da_latent_code)
 
 
 def report_SDF_cloud_surface(blender:Display, version:int) -> None:
@@ -153,7 +157,7 @@ def report_SDF_cloud_surface(blender:Display, version:int) -> None:
     blender.send_graphics_batch(msg)
 
 
-def simulation(blender_display:Display, sdf_query_machine):
+def simulation(blender_display:Display, sdf_query_machine:SDF):
     cell = Cell()
     cell.report_curr_geometry(blender_display)
 
