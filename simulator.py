@@ -1,3 +1,8 @@
+from grpc import insecure_channel, RpcError
+import buckets_with_graphics_pb2 as PROTOCOL
+import buckets_with_graphics_pb2_grpc
+
+
 class Sphere:
     def __init__(self, sphere_id, x,y,z, radius):
         self.id = sphere_id
@@ -23,7 +28,10 @@ class Sphere:
     def update_future_pos(self, sdf_query_machine, latent_code):
         # TODO, for now a fake translation to the right...
         # normally, however, it should ask the 'sdf_query_machine' and figure out the movement
-        self.next_x += 1
+        self.next_x = self.curr_x + 1
+        self.next_y = self.curr_y
+        self.next_z = self.curr_z
+        self.next_r = self.curr_r
 
 
 class Cell:
@@ -36,7 +44,7 @@ class Cell:
         self.geometry.append( Sphere(4, -3, 3,0, 3) )
         self.geometry.append( Sphere(5, -3, 7,0, 3) )
 
-        self.shape_latent_code = 123456
+        self.this_shape_latent_code = 123456
 
 
     def report_curr_geometry(self, blender_server):
@@ -45,14 +53,14 @@ class Cell:
         # for now only, report on the console (TODO)
         print("Cell's current geometry:")
         for s in self.geometry:
-            print(f"  Sphere {s.id} now at {s.curr_x}, {s.curr_y}, {s.curr_z}")
+            print(f"  Sphere {s.id} now at {s.curr_x}, {s.curr_y}, {s.curr_z}, and with radius {s.curr_r}")
         pass
 
 
     def update_pos(self, sdf_query_machine):
         # update each sphere, one by one
         for s in self.geometry:
-            s.update_future_pos(sdf_query_machine, self.latent_code)
+            s.update_future_pos(sdf_query_machine, self.this_shape_latent_code)
 
         # potential self-checks after the spheres have (possibly) moved
         # ...maybe TODO, maybe just empty...
@@ -62,6 +70,16 @@ class Cell:
             s.update_current_pos()
 
 
+def simulation():
+    cell = Cell()
+    cell.report_curr_geometry(None)
 
-cell = Cell()
-cell.report_curr_geometry()
+    key = ''
+    while key != 'q':
+         cell.update_pos(None)
+         cell.report_curr_geometry(None)
+
+         key = input("press a key to advance, 'q' to quit: ")
+
+
+simulation()
