@@ -157,12 +157,12 @@ def simulation(blender_display:Display, sdf_query_machine):
     key = ''
     display_time = 1
     while key != 'q':
-         cell.update_pos(sdf_query_machine)
-         cell.report_curr_geometry(blender_display)
-         report_SDF_cloud_surface(blender_display, display_time)
+        cell.update_pos(sdf_query_machine)
+        cell.report_curr_geometry(blender_display)
+        report_SDF_cloud_surface(blender_display, display_time)
 
-         key = input("press a key to advance, 'q' to quit: ")
-         display_time += 1
+        key = input("press a key to advance, 'q' to quit: ")
+        display_time += 1
 
 
 try:
