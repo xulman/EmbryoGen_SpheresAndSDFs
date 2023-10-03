@@ -46,13 +46,14 @@ class BlenderDisplay(Display):
 
 
 class Sphere:
-    def __init__(self, sphere_id, x,y,z, radius):
+    def __init__(self, sphere_id, x,y,z, radius, color):
         self.id = sphere_id
 
         self.curr_x = x
         self.curr_y = y
         self.curr_z = z
         self.curr_r = radius
+        self.color = color
 
         self.next_x = -1
         self.next_y = -1
@@ -82,12 +83,13 @@ class Sphere:
 class Cell:
     def __init__(self, using_this_latent_code:[float]):
         self.geometry = []
-        self.geometry.append( Sphere(0,  0,10,0, 3) )
-        self.geometry.append( Sphere(1,  3, 7,0, 3) )
-        self.geometry.append( Sphere(2,  3, 3,0, 3) )
-        self.geometry.append( Sphere(3,  0, 0,0, 3) )
-        self.geometry.append( Sphere(4, -3, 3,0, 3) )
-        self.geometry.append( Sphere(5, -3, 7,0, 3) )
+        self.geometry.append( Sphere(0,  0,10,0, 3, 0xFFFFFF) )
+        self.geometry.append( Sphere(1,  3, 7,0, 3, 0xFF0000) )
+        self.geometry.append( Sphere(2,  3, 3,0, 3, 0x00FF00) )
+        self.geometry.append( Sphere(3,  0, 0,0, 3, 0x0000FF) )
+        self.geometry.append( Sphere(4, -3, 3,0, 3, 0xFFFF00) )
+        self.geometry.append( Sphere(5, -3, 7,0, 3, 0x00FFFF) )
+        #self.geometry.append( Sphere(6, -3, 7,0, 3, 0xFF00FF) ) #example of another color
         self.version = 0 #aka time
 
         self.this_shape_latent_code = using_this_latent_code.copy()
@@ -106,7 +108,7 @@ class Cell:
             sphParams.centre.z = s.curr_z
             sphParams.radius = s.curr_r
             sphParams.time = self.version
-            sphParams.colorIdx = s.id
+            sphParams.colorXRGB = s.color
             msg.spheres.append(sphParams)
         blender.send_graphics_batch(msg, self.version == 0)
 
