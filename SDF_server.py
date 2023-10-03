@@ -13,18 +13,21 @@ class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
         ret_val.input.x = msg.x
         ret_val.input.y = msg.y
         ret_val.input.z = msg.z
-        ret_val.input.latent_code = msg.latent_code
+        ret_val.input.t = msg.t
+        for c in msg.latent_code_elements:
+            ret_val.input.latent_code_elements.append(c)
 
         ############ fix this ############
         # input
         x = msg.x
         y = msg.y
         z = msg.z
-        code = msg.latent_code
+        t = msg.t
+        code = [c for c in msg.latent_code_elements]
         #
         # output
         sdf_value = x+y+z
-        print(f"processing request: {x},{y},{z},{code} -> {sdf_value}")
+        print(f"processing request: {x},{y},{z},{t} -> {sdf_value}, using latent_code {code}")
         ############ fix this ############
 
         ret_val.sdf_output = sdf_value

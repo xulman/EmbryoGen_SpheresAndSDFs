@@ -1,5 +1,5 @@
 - use python 3.9 or newer
 - be (have $PWD) in this directory
-- call: ./python3.9 codegen.py
+- call: python3.9 codegen.py
 
 - this shall create anew both files ../query_SDF_network_pb2*py
