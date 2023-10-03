@@ -164,15 +164,18 @@ def simulation(blender_display:Display, sdf_query_machine:SDF):
     cell = Cell( sdf_query_machine.latent_code ) # use the same cached latent_code
     cell.report_curr_geometry(blender_display)
 
+    display_time = 0
+    report_SDF_cloud_surface(blender_display, display_time, sdf_query_machine)
+
     key = ''
-    display_time = 1
     while key != 'q':
         cell.update_pos(sdf_query_machine)
         cell.report_curr_geometry(blender_display)
+
+        display_time += 1
         report_SDF_cloud_surface(blender_display, display_time, sdf_query_machine)
 
         key = input("press a key to advance, 'q' to quit: ")
-        display_time += 1
 
 
 try:
