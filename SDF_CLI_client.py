@@ -44,11 +44,11 @@ def main():
             cli_str:str = input("type x,y,z,t comma or white space separated, 'q' to quit: ")
             keepAsking = cli_str != 'q'
 
-            # try with whitespace first
-            cli_items = cli_str.split()
+            # try with commas first
+            cli_items = cli_str.split(",")
             if len(cli_items) != 4:
-                #print("trying commas")
-                cli_items = cli_str.split(",")
+                # try with whitespace second
+                cli_items = cli_str.split()
 
             if len(cli_items) == 4:
                 [x,y,z,t] = cli_items
