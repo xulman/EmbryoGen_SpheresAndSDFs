@@ -92,7 +92,7 @@ class Cell:
 
     def report_curr_geometry(self, blender:Display) -> None:
         # iterates over the spheres and "beams" them to Blender for vizu
-        print("Cell's current geometry:")
+        print(f"Cell's current geometry, version = {self.version}:")
         msg = blender.create_graphics_batch("cell geometry")
         for s in self.geometry:
             print(f"  Sphere {s.id} now at {s.curr_x}, {s.curr_y}, {s.curr_z}, and with radius {s.curr_r}")
@@ -106,7 +106,6 @@ class Cell:
             sphParams.colorIdx = s.id
             msg.spheres.append(sphParams)
         blender.send_graphics_batch(msg)
-        self.version += 1
 
 
     def update_pos(self, sdf_query_machine:SDF):
@@ -120,6 +119,7 @@ class Cell:
         # after the updated geometry is in a good shape, promote it to become the current geometry
         for s in self.geometry:
             s.update_current_pos()
+        self.version += 1
 
 
 
