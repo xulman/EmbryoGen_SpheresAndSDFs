@@ -15,7 +15,7 @@ message QueryMsg {
 	float y = 2;
 	float z = 3;
 	float t = 4;
-	repeated float latent_code_element = 5;
+	repeated float latent_code_elements = 5;
 }
 
 
