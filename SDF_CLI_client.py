@@ -3,27 +3,31 @@ import query_SDF_network_pb2 as SDF
 import query_SDF_network_pb2_grpc
 
 class Talker:
-    def __init__(self, url:str, latent_code:int):
+    def __init__(self, url:str, using_this_latent_code:[float]):
         self.comm = query_SDF_network_pb2_grpc.ClientToSDFStub(insecure_channel(url))
-        self.latent_code = latent_code
+        self.latent_code = using_this_latent_code.copy()
 
-    def askOne(self, x:float, y:float, z:float) -> float:
+    def askOne(self, x:float, y:float, z:float, t:float) -> float:
         msg = SDF.QueryMsg()
         msg.x = x
         msg.y = y
         msg.z = z
-        msg.latent_code = self.latent_code
+        msg.t = t
+        for c in self.latent_code:
+            msg.latent_code_elements.append(c)
         dist = self.comm.queryOne(msg)
         return dist.sdf_output
 
-    def askMulti(self, listOfTripplets:[[float,float,float]]) -> [float]:
+    def askMulti(self, listOfxyzt:[[float,float,float,float]]) -> [float]:
         msgs = []
-        for x,y,z in listOfTripplets:
+        for x,y,z,t in listOfxyzt:
             msg = SDF.QueryMsg()
             msg.x = x
             msg.y = y
             msg.z = z
-            msg.latent_code = self.latent_code
+            msg.t = t
+            for c in self.latent_code:
+                msg.latent_code_elements.append(c)
             msgs.append(msg)
         dists = self.comm.queryStream(iter(msgs))
         return [dist.sdf_output for dist in dists]
@@ -32,27 +36,29 @@ class Talker:
 
 def main():
     try:
-        talker = Talker("localhost:10101", 48929375983759)
+        latent_code = [489.1,293.2,759.3,837.4,59.5]
+        talker = Talker("localhost:10101", latent_code)
 
         keepAsking = True
         while keepAsking:
-            cli_str:str = input("type x,y,z comma or white space separated, 'q' to quit: ")
+            cli_str:str = input("type x,y,z,t comma or white space separated, 'q' to quit: ")
             keepAsking = cli_str != 'q'
 
             # try with whitespace first
             cli_items = cli_str.split()
-            if len(cli_items) != 3:
+            if len(cli_items) != 4:
                 #print("trying commas")
                 cli_items = cli_str.split(",")
 
-            if len(cli_items) == 3:
-                [x,y,z] = cli_items
+            if len(cli_items) == 4:
+                [x,y,z,t] = cli_items
                 x = float(x)
                 y = float(y)
                 z = float(z)
-                dist = talker.askOne(x,y,z)
-                #dist = talker.askMulti([[x,y,z],[x,y,z],[x,y,z],[x,y,z],[x,y,z]])
-                print(f"{x},{y},{z} -> {dist}")
+                t = float(t)
+                dist = talker.askOne(x,y,z,t)
+                #dist = talker.askMulti([[x,y,z,t],[x,y,z,t],[x,y,z,t],[x,y,z,t],[x,y,z,t]])
+                print(f"{x},{y},{z},{t} -> {dist}")
 
     except RpcError as e:
         print("Some connection error, details follow:")
