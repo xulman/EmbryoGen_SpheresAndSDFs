@@ -4,9 +4,6 @@ import buckets_with_graphics_pb2_grpc
 from SDF_CLI_client import Talker as SDF
 
 
-da_latent_code = 123456
-
-
 class Display:
     def greet_server(self) -> None:
         pass
@@ -80,7 +77,7 @@ class Sphere:
 
 
 class Cell:
-    def __init__(self):
+    def __init__(self, using_this_latent_code:[float]):
         self.geometry = []
         self.geometry.append( Sphere(0,  0,10,0, 3) )
         self.geometry.append( Sphere(1,  3, 7,0, 3) )
@@ -90,7 +87,7 @@ class Cell:
         self.geometry.append( Sphere(5, -3, 7,0, 3) )
         self.version = 0 #aka time
 
-        self.this_shape_latent_code = da_latent_code
+        self.this_shape_latent_code = using_this_latent_code.copy()
 
 
     def report_curr_geometry(self, blender:Display) -> None:
@@ -133,7 +130,7 @@ def connect_to_Blender(session_name:str) -> Display:
     return blender_display
 
 
-def connect_to_SDF_oraculum() -> SDF:
+def connect_to_SDF_oraculum(da_latent_code:[float]) -> SDF:
     return SDF("localhost:10101", da_latent_code)
 
 
@@ -158,7 +155,7 @@ def report_SDF_cloud_surface(blender:Display, version:int) -> None:
 
 
 def simulation(blender_display:Display, sdf_query_machine:SDF):
-    cell = Cell()
+    cell = Cell( sdf_query_machine.latent_code ) # use the same cached latent_code
     cell.report_curr_geometry(blender_display)
 
     key = ''
@@ -175,7 +172,10 @@ def simulation(blender_display:Display, sdf_query_machine:SDF):
 try:
     display = Display() # sends nothing, requires no Blender
     #display = connect_to_Blender("default view")
-    sdf_query_machine = connect_to_SDF_oraculum()
+
+    da_latent_code:[float] = [1,23,4,56]
+    sdf_query_machine = connect_to_SDF_oraculum(da_latent_code)
+
     simulation(display, sdf_query_machine)
 
 except RpcError as e:
