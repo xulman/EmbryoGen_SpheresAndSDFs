@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x17query_SDF_network.proto\x12\x12SDF_query_protocol\"@\n\x08QueryMsg\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\x12\x13\n\x0blatent_code\x18\x04 \x01(\x04\"K\n\x08SDFvalue\x12+\n\x05input\x18\x01 \x01(\x0b\x32\x1c.SDF_query_protocol.QueryMsg\x12\x12\n\nsdf_output\x18\x02 \x01(\x02\x32\xa8\x01\n\x0b\x43lientToSDF\x12H\n\x08queryOne\x12\x1c.SDF_query_protocol.QueryMsg\x1a\x1c.SDF_query_protocol.SDFvalue\"\x00\x12O\n\x0bqueryStream\x12\x1c.SDF_query_protocol.QueryMsg\x1a\x1c.SDF_query_protocol.SDFvalue\"\x00(\x01\x30\x01\x42&\n$cz.it4i.ulman.transfers.sdf.protocolb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x17query_SDF_network.proto\x12\x12SDF_query_protocol\"S\n\x08QueryMsg\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\x12\t\n\x01t\x18\x04 \x01(\x02\x12\x1b\n\x13latent_code_element\x18\x05 \x03(\x02\"K\n\x08SDFvalue\x12+\n\x05input\x18\x01 \x01(\x0b\x32\x1c.SDF_query_protocol.QueryMsg\x12\x12\n\nsdf_output\x18\x02 \x01(\x02\x32\xa8\x01\n\x0b\x43lientToSDF\x12H\n\x08queryOne\x12\x1c.SDF_query_protocol.QueryMsg\x1a\x1c.SDF_query_protocol.SDFvalue\"\x00\x12O\n\x0bqueryStream\x12\x1c.SDF_query_protocol.QueryMsg\x1a\x1c.SDF_query_protocol.SDFvalue\"\x00(\x01\x30\x01\x42&\n$cz.it4i.ulman.transfers.sdf.protocolb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'query_SDF_network_pb2', globals())
@@ -22,9 +22,9 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n$cz.it4i.ulman.transfers.sdf.protocol'
   _QUERYMSG._serialized_start=47
-  _QUERYMSG._serialized_end=111
-  _SDFVALUE._serialized_start=113
-  _SDFVALUE._serialized_end=188
-  _CLIENTTOSDF._serialized_start=191
-  _CLIENTTOSDF._serialized_end=359
+  _QUERYMSG._serialized_end=130
+  _SDFVALUE._serialized_start=132
+  _SDFVALUE._serialized_end=207
+  _CLIENTTOSDF._serialized_start=210
+  _CLIENTTOSDF._serialized_end=378
 # @@protoc_insertion_point(module_scope)
