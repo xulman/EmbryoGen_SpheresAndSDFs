@@ -64,9 +64,9 @@ class Sphere:
         self.curr_r = self.next_r
 
 
-    def update_future_pos(self, sdf_query_machine:SDF, latent_code):
-        # ask the 'sdf_query_machine' and figure out the movement
-        delta = sdf_query_machine.askOne(self.curr_x, self.curr_y, self.curr_z);
+    def update_future_pos(self, sdf_query_machine:SDF, current_timepoint:int):
+        # ask the 'sdf_query_machine' and figure out the movement into the upcoming timepoint
+        delta = sdf_query_machine.askOne(self.curr_x, self.curr_y, self.curr_z, current_timepoint+1);
         # maybe query around to get direction of the shift whose magnitude is |delta|
 
         # TODO: but for now, a fake translation to the right...
@@ -112,7 +112,7 @@ class Cell:
     def update_pos(self, sdf_query_machine:SDF):
         # update each sphere, one by one
         for s in self.geometry:
-            s.update_future_pos(sdf_query_machine, self.this_shape_latent_code)
+            s.update_future_pos(sdf_query_machine, self.version)
 
         # potential self-checks after the spheres have (possibly) moved
         # ...maybe TODO, maybe just empty...
