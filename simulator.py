@@ -11,7 +11,7 @@ class Display:
     def create_graphics_batch(self, content_title:str) -> PROTOCOL.BatchOfGraphics:
         return PROTOCOL.BatchOfGraphics()
 
-    def send_graphics_batch(self, the_batch:PROTOCOL.BatchOfGraphics) -> None:
+    def send_graphics_batch(self, the_batch:PROTOCOL.BatchOfGraphics, shouldResetGraphics:bool = False) -> None:
         pass
 
 
@@ -38,8 +38,11 @@ class BlenderDisplay(Display):
         msg.dataID = 1
         return msg
 
-    def send_graphics_batch(self, the_batch:PROTOCOL.BatchOfGraphics) -> None:
-        self.comm.addGraphics(iter([the_batch]))
+    def send_graphics_batch(self, the_batch:PROTOCOL.BatchOfGraphics, shouldResetGraphics:bool = False) -> None:
+        if shouldResetGraphics:
+            self.comm.replaceGraphics(iter([the_batch]))
+        else:
+            self.comm.addGraphics(iter([the_batch]))
 
 
 class Sphere:
@@ -105,7 +108,7 @@ class Cell:
             sphParams.time = self.version
             sphParams.colorIdx = s.id
             msg.spheres.append(sphParams)
-        blender.send_graphics_batch(msg)
+        blender.send_graphics_batch(msg, self.version == 0)
 
 
     def update_pos(self, sdf_query_machine:SDF):
@@ -154,7 +157,7 @@ def report_SDF_cloud_surface(blender:Display, version:int, sdf_query_machine:SDF
         sphParams.time = version
         sphParams.colorXRGB = 0xAAAAAA
         msg.spheres.append(sphParams)
-    blender.send_graphics_batch(msg)
+    blender.send_graphics_batch(msg, version == 0)
 
 
 def simulation(blender_display:Display, sdf_query_machine:SDF):
