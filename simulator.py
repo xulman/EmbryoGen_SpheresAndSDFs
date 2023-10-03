@@ -134,8 +134,11 @@ def connect_to_SDF_oraculum(da_latent_code:[float]) -> SDF:
     return SDF("localhost:10101", da_latent_code)
 
 
-def report_SDF_cloud_surface(blender:Display, version:int) -> None:
+def report_SDF_cloud_surface(blender:Display, version:int, sdf_query_machine:SDF) -> None:
     # TODO don't know how zero-level set is read out
+    # query the SDF at least once...
+    sdf_query_machine.askOne(-1,-1,-1,version)
+    #
     # make up a couple of points to have now something to show
     cloudPoint = []
     for q,w in [[x,y] for x in range(10) for y in range(10)]:
@@ -163,7 +166,7 @@ def simulation(blender_display:Display, sdf_query_machine:SDF):
     while key != 'q':
         cell.update_pos(sdf_query_machine)
         cell.report_curr_geometry(blender_display)
-        report_SDF_cloud_surface(blender_display, display_time)
+        report_SDF_cloud_surface(blender_display, display_time, sdf_query_machine)
 
         key = input("press a key to advance, 'q' to quit: ")
         display_time += 1
