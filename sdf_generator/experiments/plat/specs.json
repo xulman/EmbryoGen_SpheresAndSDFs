@@ -1,0 +1,54 @@
+{
+  "Description" : [ "Implict shape representation for cells"],
+  "DataSource" : "./data/train_plat_30x256",
+  "NetworkSpecs" : {
+    "dims" : [ 128, 128, 128, 192, 128, 128, 192, 128, 128, 128 ],
+    "dropout" : [],
+    "dropout_prob" : 0.2,
+    "norm_layers" : [],
+    "latent_in" : [ 4, 7 ],
+    "xyz_in_all" : true,
+    "use_tanh" : false,
+    "use_sine" : true,
+    "latent_dropout" : false,
+    "weight_norm" : false
+    },
+  "NumEpochs" : 7500,
+  "LearningRateSchedule" : [
+    {
+      "Type" : "Step",
+      "Initial" : 1e-4,
+      "Interval" : 500,
+      "Factor" : 0.5
+    },
+    {
+      "Type" : "Step",
+      "Initial" : 1e-4,
+      "Interval" : 500,
+      "Factor" : 0.5
+    },
+    {
+      "Type" : "Step",
+      "Initial" : 1e-3,
+      "Interval" : 15,
+      "Factor" : 0.5
+    }],
+  "UseHDF5" : true,
+  "HDF5CompressionLevel" : 1,
+  "OnTheFlySampling" : false,
+  "TrainSampleFraction" : 0.06,
+  "ClampSDFminmax" : false,
+  "ClampingDistance" : 0.1,
+  "FramesPerBatch" : 5,
+  "DataLoaderThreads" : 4,
+  "CodeRegularization" : true,
+  "CodeRegularizationLambda" : 1e-4,
+  "CodeLength" : 64,
+  "OptimizeRot" : true,
+  "OptRotEpoch" : 50,
+  "LogFrequency" : 5,
+  "ReconstructionDims" : [ 256, 256, 256 ],
+  "ReconstructionSubsetSize" : 524288,
+  "ReconstructionFramesPerSequence" : 30,
+  "NumSequences" : 33
+}

@@ -1,6 +1,7 @@
 from grpc import insecure_channel, RpcError
 import query_SDF_network_pb2 as SDF
 import query_SDF_network_pb2_grpc
+import numpy as np
 
 class Talker:
     def __init__(self, url:str, using_this_latent_code:[float]):
@@ -36,7 +37,9 @@ class Talker:
 
 def main():
     try:
-        latent_code = [489.1,293.2,759.3,837.4,59.5]
+        #latent_code = [489.1,293.2,759.3,837.4,59.5]
+        latent_code = np.random.normal(0.0, 0.001, 
+                                       size=(64)).astype(np.float32).tolist()
         talker = Talker("localhost:10101", latent_code)
 
         keepAsking = True

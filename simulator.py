@@ -2,6 +2,7 @@ from grpc import insecure_channel, RpcError
 import buckets_with_graphics_pb2 as PROTOCOL
 import buckets_with_graphics_pb2_grpc
 from SDF_CLI_client import Talker as SDF
+import numpy as np
 
 
 class Display:
@@ -184,7 +185,9 @@ try:
     display = Display() # sends nothing, requires no Blender
     #display = connect_to_Blender("default view")
 
-    da_latent_code:[float] = [1,23,4,56]
+    #da_latent_code:[float] = [1,23,4,56]
+    da_latent_code = np.random.normal(0.0, 0.001, 
+                                      size=(64)).astype(np.float32).tolist()
     sdf_query_machine = connect_to_SDF_oraculum(da_latent_code)
 
     simulation(display, sdf_query_machine)

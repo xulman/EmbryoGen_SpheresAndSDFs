@@ -2,6 +2,9 @@ from grpc import server, RpcError
 from concurrent import futures
 import query_SDF_network_pb2 as SDF
 import query_SDF_network_pb2_grpc
+import numpy as np
+
+from sdf_generator import sdf_gen
 
 serverName = "SDF network"
 serverPort = 10101
@@ -24,9 +27,11 @@ class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
         z = msg.z
         t = msg.t
         code = [c for c in msg.latent_code_elements]
-        #
+        code = np.array(code, dtype=np.float32)
+        
         # output
-        sdf_value = x+y+z
+        #sdf_value = x+y+z
+        sdf_value = sdf_gen.get_sdf_value(x, y, z, t, code)
         print(f"processing request: {x},{y},{z},{t} -> {sdf_value}, using latent_code {code}")
         ############ fix this ############
 
