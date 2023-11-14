@@ -3,6 +3,7 @@ import buckets_with_graphics_pb2 as PROTOCOL
 import buckets_with_graphics_pb2_grpc
 from SDF_CLI_client import Talker as SDF
 import numpy as np
+import time
 
 
 class Display:
@@ -143,23 +144,33 @@ def connect_to_SDF_oraculum(da_latent_code:[float]) -> SDF:
 def report_SDF_cloud_surface(blender:Display, version:int, sdf_query_machine:SDF) -> None:
     # TODO don't know how zero-level set is read out
     # query the SDF at least once...
-    sdf_query_machine.askOne(-1,-1,-1,version)
-    #
-    # make up a couple of points to have now something to show
-    cloudPoint = []
-    for q,w in [[x,y] for x in range(10) for y in range(10)]:
-        cloudPoint.append([q,w,5])
+    time_start = time.time()
+    divisor = 10
+    halfDivisor = 0.5 / float(divisor) # 1/(2*divisor)
+    closeByDist = 0.10
+
+    positions = [[px/float(divisor) +halfDivisor,py/float(divisor) +halfDivisor,0.1,version/10]
+            for px in range(-divisor,divisor)
+            for py in range(-divisor,divisor)]
+    print(f"multi-query of {len(positions)} positions")
+    dists = sdf_query_machine.askMulti(positions)
+    time_stop = time.time()
+    print(f"multi-query of {len(dists)} distances took {time_stop-time_start} seconds")
+    #print(f"distances: {dists}")
+    #print(f"positions: {positions}")
 
     msg = blender.create_graphics_batch("cloud point")
-    for x,y,z in cloudPoint:
-        sphParams = PROTOCOL.SphereParameters()
-        sphParams.centre.x = x
-        sphParams.centre.y = y
-        sphParams.centre.z = z+ 0.1*version
-        sphParams.radius = 0.5
-        sphParams.time = version
-        sphParams.colorXRGB = 0xAAAAAA
-        msg.spheres.append(sphParams)
+    for (pos,dist) in zip(positions,dists):
+        print(f"considering {pos} @ {dist}")
+        if -closeByDist < dist < closeByDist:
+            sphParams = PROTOCOL.SphereParameters()
+            sphParams.centre.x = pos[0]
+            sphParams.centre.y = pos[1]
+            sphParams.centre.z = pos[2]
+            sphParams.radius = 0.05
+            sphParams.time = version
+            sphParams.colorXRGB = 0xAAAAAA
+            msg.spheres.append(sphParams)
     blender.send_graphics_batch(msg, version == 0)
 
 
