@@ -11,6 +11,9 @@ serverPort = 10101
 
 class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
 
+    def init_SDF(self):
+        self.network = sdf_gen.init_network()
+
     def get_SDF_answer(self, msg:SDF.QueryMsg) -> SDF.SDFvalue:
         ret_val = SDF.SDFvalue()
         ret_val.input.x = msg.x
@@ -20,20 +23,13 @@ class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
         for c in msg.latent_code_elements:
             ret_val.input.latent_code_elements.append(c)
 
-        ############ fix this ############
-        # input
-        x = msg.x
-        y = msg.y
-        z = msg.z
-        t = msg.t
+        # latent code as numpy array
         code = [c for c in msg.latent_code_elements]
         code = np.array(code, dtype=np.float32)
-        
+
         # output
-        #sdf_value = x+y+z
-        sdf_value = sdf_gen.get_sdf_value(x, y, z, t, code)
-        print(f"processing request: {x},{y},{z},{t} -> {sdf_value}, using latent_code {code}")
-        ############ fix this ############
+        sdf_value = sdf_gen.get_sdf_value(msg.x, msg.y, msg.z, msg.t, code, self.network)
+        print(f"processing request: {msg.x},{msg.y},{msg.z},{msg.t} -> {sdf_value}, using latent_code [{code[0]}...{code[-1]}]")
 
         ret_val.sdf_output = sdf_value
         return ret_val
@@ -53,7 +49,9 @@ class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
 
 try:
     serv = server( futures.ThreadPoolExecutor(2,serverName), maximum_concurrent_rpcs=5 )
-    query_SDF_network_pb2_grpc.add_ClientToSDFServicer_to_server(TalkerService(),serv)
+    TS = TalkerService()
+    TS.init_SDF()
+    query_SDF_network_pb2_grpc.add_ClientToSDFServicer_to_server(TS,serv)
     serv.add_insecure_port('[::]:%d'%serverPort)
 
     serv.start()

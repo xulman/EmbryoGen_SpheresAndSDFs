@@ -20,8 +20,12 @@ from lib.decoder import *
 #main_function("./experiments/plat", "generate")
 
 
-def get_sdf_value(x, y, z, t, latent_code):
-    
+def init_network():
+    network = int(5)
+    return network
+
+
+def get_sdf_value(x, y, z, t, latent_code, network):
     # setup   
     experiment_directory = "./sdf_generator/experiments/plat"
     test_epoch = None
