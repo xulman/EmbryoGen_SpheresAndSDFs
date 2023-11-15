@@ -33,7 +33,24 @@ class Talker:
         dists = self.comm.queryStream(iter(msgs))
         return [dist.sdf_output for dist in dists]
 
+    def askBox(self, xmin,xmax, ymin,ymax, zmin,zmax, t, delta) -> [float]:
+        msg = SDF.QueryBox()
+        msg.x_min = xmin
+        msg.x_max = xmax
+        msg.y_min = ymin
+        msg.y_max = ymax
+        msg.z_min = zmin
+        msg.z_max = zmax
+        msg.t = t
+        msg.xyz_max_delta = delta
+        for c in self.latent_code:
+            msg.latent_code_elements.append(c)
+        dists = self.comm.queryBox(msg)
+        return [dist for dist in dists.sdf_outputs]
 
+
+def assureBound(val:float) -> float:
+    return max(-1.0, min(val, 1.0))
 
 def main():
     try:
