@@ -3,6 +3,7 @@ from concurrent import futures
 import query_SDF_network_pb2 as SDF
 import query_SDF_network_pb2_grpc
 import numpy as np
+import time
 
 from sdf_generator import sdf_gen
 
@@ -39,10 +40,12 @@ class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
         return self.get_SDF_answer(msg)
 
     def queryStream(self, msg_iterator:SDF.QueryMsg, context):
-        print("multi-message")
         vals = []
+        time_start = time.time()
         for msg in msg_iterator:
             vals.append( self.get_SDF_answer(msg) )
+        time_stop = time.time()
+        print(f"multi-message of {len(vals)} msgs took {time_stop-time_start} seconds")
         return iter(vals)
 
 
