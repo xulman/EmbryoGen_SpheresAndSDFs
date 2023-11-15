@@ -52,6 +52,10 @@ class Talker:
 def assureBound(val:float) -> float:
     return max(-1.0, min(val, 1.0))
 
+def sidesPair(centre:float, sideStep:float) -> tuple[float,float]:
+    return assureBound(centre-sideStep),assureBound(centre+sideStep)
+
+
 def main():
     try:
         #latent_code = [489.1,293.2,759.3,837.4,59.5]
@@ -78,6 +82,10 @@ def main():
                 t = float(t)
                 dist = talker.askOne(x,y,z,t)
                 #dist = talker.askMulti([[x,y,z,t],[x,y,z,t],[x,y,z,t],[x,y,z,t],[x,y,z,t]])
+                #mix,max = sidesPair(x,0.2)
+                #miy,may = sidesPair(y,0.1)
+                #miz,maz = sidesPair(z,0.05)
+                #dist = talker.askBox( mix,max,miy,may,miz,maz, t, 0.105)
                 print(f"{x},{y},{z},{t} -> {dist}")
 
     except RpcError as e:
