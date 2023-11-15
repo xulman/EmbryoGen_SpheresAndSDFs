@@ -46,6 +46,64 @@ class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
         return iter(vals)
 
 
+    def queryBox(self, msg:SDF.QueryBox, context):
+        print("box-message")
+
+        answer = SDF.SDFboxValues()
+        for c in msg.latent_code_elements:
+            answer.latent_code_elements.append(c)
+
+        steps = msg.xyz_intermediate_steps if msg.HasField('xyz_intermediate_steps') \
+               else self.getIntermediateStepsForIntervalWithDelta(msg.x_min, msg.x_max, msg.xyz_max_delta)
+        answer.x_start, answer.x_delta, answer.x_num_values = self.getStartDeltaNumValues(msg.x_min, msg.x_max, steps)
+
+        steps = msg.xyz_intermediate_steps if msg.HasField('xyz_intermediate_steps') \
+               else self.getIntermediateStepsForIntervalWithDelta(msg.y_min, msg.y_max, msg.xyz_max_delta)
+        answer.y_start, answer.y_delta, answer.y_num_values = self.getStartDeltaNumValues(msg.y_min, msg.y_max, steps)
+
+        steps = msg.xyz_intermediate_steps if msg.HasField('xyz_intermediate_steps') \
+               else self.getIntermediateStepsForIntervalWithDelta(msg.z_min, msg.z_max, msg.xyz_max_delta)
+        answer.z_start, answer.z_delta, answer.z_num_values = self.getStartDeltaNumValues(msg.z_min, msg.z_max, steps)
+        answer.t = msg.t
+
+        xyzt_in_this_order = list()
+        for iz in range(answer.z_num_values):
+            z = answer.z_start + iz*answer.z_delta
+
+            for iy in range(answer.y_num_values):
+                y = answer.y_start + iy*answer.y_delta
+
+                for ix in range(answer.x_num_values):
+                    x = answer.x_start + ix*answer.x_delta
+
+                    xyzt_in_this_order.append([x,y,z,answer.t])
+
+        ############ fix this ############
+        for x,y,z,t in xyzt_in_this_order:
+            print(f"positions: {x},{y},{z}")
+            answer.sdf_outputs.append(x+y)
+        ############ fix this ############
+
+        return answer
+
+
+    def getIntermediateStepsForIntervalWithDelta(self, min:float, max:float, delta:float) -> int:
+        """Return the number of intermediate steps when sampling 'min' to 'max' in not more than 'delta'-long jumps"""
+        if max <= min:
+            return 0
+
+        full_dist = max - min
+        steps = int(full_dist // delta)
+        # make one less if the distance is an integeer multiple of the delta
+        steps -= 1 if steps*delta == full_dist else 0
+        return steps
+
+    def getStartDeltaNumValues(self, min:float, max:float, steps:int) -> [float,float,int]:
+        """Returns starting point, step size and number of steps needed to reach the 'max' from 'min' using intermediate 'steps'"""
+        delta = (max-min) / (1.0+steps)
+        return min,delta,steps+2
+        #                     +2 for the edge/side values
+
 
 try:
     serv = server( futures.ThreadPoolExecutor(2,serverName), maximum_concurrent_rpcs=5 )
