@@ -24,6 +24,11 @@ class ClientToSDFStub(object):
                 request_serializer=query__SDF__network__pb2.QueryMsg.SerializeToString,
                 response_deserializer=query__SDF__network__pb2.SDFvalue.FromString,
                 )
+        self.queryBox = channel.unary_unary(
+                '/SDF_query_protocol.ClientToSDF/queryBox',
+                request_serializer=query__SDF__network__pb2.QueryBox.SerializeToString,
+                response_deserializer=query__SDF__network__pb2.SDFboxValues.FromString,
+                )
 
 
 class ClientToSDFServicer(object):
@@ -41,6 +46,12 @@ class ClientToSDFServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def queryBox(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ClientToSDFServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -53,6 +64,11 @@ def add_ClientToSDFServicer_to_server(servicer, server):
                     servicer.queryStream,
                     request_deserializer=query__SDF__network__pb2.QueryMsg.FromString,
                     response_serializer=query__SDF__network__pb2.SDFvalue.SerializeToString,
+            ),
+            'queryBox': grpc.unary_unary_rpc_method_handler(
+                    servicer.queryBox,
+                    request_deserializer=query__SDF__network__pb2.QueryBox.FromString,
+                    response_serializer=query__SDF__network__pb2.SDFboxValues.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,5 +111,22 @@ class ClientToSDF(object):
         return grpc.experimental.stream_stream(request_iterator, target, '/SDF_query_protocol.ClientToSDF/queryStream',
             query__SDF__network__pb2.QueryMsg.SerializeToString,
             query__SDF__network__pb2.SDFvalue.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def queryBox(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/SDF_query_protocol.ClientToSDF/queryBox',
+            query__SDF__network__pb2.QueryBox.SerializeToString,
+            query__SDF__network__pb2.SDFboxValues.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
