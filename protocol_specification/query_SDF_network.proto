@@ -7,6 +7,7 @@ option java_package = "cz.it4i.ulman.transfers.sdf.protocol";
 service ClientToSDF {
 	rpc queryOne(QueryMsg) returns (SDFvalue) {}
 	rpc queryStream(stream QueryMsg) returns (stream SDFvalue) {}
+	rpc queryBox(QueryBox) returns (SDFboxValues) {}
 }
 
 
@@ -18,8 +19,64 @@ message QueryMsg {
 	repeated float latent_code_elements = 5;
 }
 
-
 message SDFvalue {
 	QueryMsg input = 1;
 	float sdf_output = 2;
+}
+
+
+message QueryBox {
+	// closed intervals for x-, y-, and z-axis define
+	// an regular axes-aligned 3D box
+	float x_min = 1;
+	float x_max = 2;
+	float y_min = 3;
+	float y_max = 4;
+	float z_min = 5;
+	float z_max = 6;
+	float t = 7;
+
+	// stepping at which to sample the 3D box defined
+	// with the three spatial intervals above
+	oneof xyz_stepping {
+		//
+		// when sampling, make sure the maximum distance
+		// between two samples is not more that this delta
+		// (accepted only: strictly positive number)
+		float xyz_max_delta = 8;
+		//
+		// alternatively, make sure exactly this number of _intermediate_ steps is used
+		// (accepted only: non-negative number)
+		uint32 xyz_intermediate_steps = 9;
+	}
+
+	repeated float latent_code_elements = 10;
+}
+
+message SDFboxValues {
+	// a 3D box (an 3D image essentially) with values placed
+	// first along x-axis, then along y-axis and finally along z-axis
+	//
+	// an axis is swept as follows:
+	//    for i in < 0:x_num_values-1 > { current_x_pos = x_start + i*x_delta }
+	//
+	float x_start = 1;
+	float x_delta = 2;
+	uint32 x_num_values = 3;
+
+	float y_start = 4;
+	float y_delta = 5;
+	uint32 y_num_values = 6;
+
+	float z_start = 7;
+	float z_delta = 8;
+	uint32 z_num_values = 9;
+
+	float t = 10;
+
+	// an array of values where [x,y,z] value is to be found
+	// at index: x + y*x_num_values + z*x_num_values*y_num_values
+	repeated float sdf_outputs = 11;
+
+	repeated float latent_code_elements = 12;
 }
