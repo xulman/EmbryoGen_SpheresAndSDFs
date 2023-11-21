@@ -6,6 +6,7 @@ import sys
 import os
 from math import pi
 import time
+from collections import OrderedDict # manipulation with state dictionary
 
 # append path for loading generator's own imports
 sys.path.append("./sdf_generator")
@@ -64,18 +65,29 @@ def get_sdf_value(x, y, z, t, latent_code, network):
 
     # load decoder
     decoder = DeepSDF(latent_size, **specs["NetworkSpecs"])
-    decoder = torch.nn.DataParallel(decoder) 
+    if device == 'gpu':
+        decoder = torch.nn.DataParallel(decoder) 
     if test_epoch is None:
+        state_file = 'model.pth'
+    else:
+        state_file = 'e' + test_epoch.zfill(4) + '_model.pth'
+    if device == 'gpu':
         saved_model_state = torch.load(
-            os.path.join(experiment_directory, model_params_subdir, 'model.pth'))
-    else: 
+            os.path.join(experiment_directory, model_params_subdir, state_file))
+        decoder.load_state_dict(saved_model_state["model_state_dict"])
+    else:
         saved_model_state = torch.load(
-            os.path.join(experiment_directory, model_params_subdir, 'e' + \
-                test_epoch.zfill(4) + '_model.pth'))
-    saved_model_epoch = saved_model_state["epoch"]
-    decoder.load_state_dict(saved_model_state["model_state_dict"])
+            os.path.join(experiment_directory, model_params_subdir, state_file),
+            map_location='cpu')
+        cpu_state_dict = OrderedDict()
+        for k, v in saved_model_state["model_state_dict"].items():
+            cpu_state_dict[k.replace("module.", "")] = v
+        decoder.load_state_dict(cpu_state_dict)
     #decoder = decoder.module.cuda()
-    decoder = decoder.module.to(device)
+    if device == 'gpu':
+        decoder = decoder.module.to(device)
+    else:
+        decoder = decoder.to('cpu')
     decoder.eval() # set the dropout and batch norm layers to eval mode
     #print(decoder)
                                      
