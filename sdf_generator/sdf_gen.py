@@ -20,13 +20,13 @@ from lib.decoder import *
 
 #main_function("./experiments/plat", "generate")
 
-# setup   
-experiment_directory = "./sdf_generator/experiments/plat"
-test_epoch = None
-
 
 def init_network():
     #network = int(5)
+    
+    # setup   
+    experiment_directory = "./sdf_generator/experiments/plat"
+    test_epoch = None
     
     specs = load_experiment_specifications(experiment_directory)
     latent_size = specs["CodeLength"]
@@ -67,12 +67,12 @@ def get_sdf_value(x, y, z, t, latent_code, decoder):
     
     #print('PyTorch is computing with {}!'.format(device))
 
-    specs = load_experiment_specifications(experiment_directory)
+    #specs = load_experiment_specifications(experiment_directory)
 
     #print("Experiment description: \n" + ' '.join([str(elem) for elem in
     #                                               specs["Description"]]))
 
-    latent_size = specs["CodeLength"]
+    #latent_size = specs["CodeLength"]
     #num_sequences = specs["NumSequences"]
     # size of one reconstruction batch
     #rec_size = specs["ReconstructionSubsetSize"]
@@ -88,8 +88,8 @@ def get_sdf_value(x, y, z, t, latent_code, decoder):
     assert -1 <= y <= 1, "Space and time coordinates must be in [-1,1]"
     assert -1 <= z <= 1, "Space and time coordinates must be in [-1,1]"
     assert -1 <= t <= 1, "Space and time coordinates must be in [-1,1]"
-    assert latent_code.shape == (latent_size,), "Incorrect latent code dimensions"
-    rot_ang = np.array([0, 0, 0], dtype=np.float32)
+    #assert latent_code.shape == (latent_size,), "Incorrect latent code dimensions"
+    #rot_ang = np.array([0, 0, 0], dtype=np.float32)
 
     '''def signal_handler(sig, frame):
         print("Stopping early...")
