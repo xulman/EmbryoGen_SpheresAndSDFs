@@ -20,49 +20,17 @@ from lib.decoder import *
 
 #main_function("./experiments/plat", "generate")
 
+# setup   
+experiment_directory = "./sdf_generator/experiments/plat"
+test_epoch = None
+
 
 def init_network():
-    network = int(5)
-    return network
-
-
-def get_sdf_value(x, y, z, t, latent_code, network):
-    # setup   
-    experiment_directory = "./sdf_generator/experiments/plat"
-    test_epoch = None
+    #network = int(5)
     
-    #print('PyTorch is computing with {}!'.format(device))
-
     specs = load_experiment_specifications(experiment_directory)
-
-    #print("Experiment description: \n" + ' '.join([str(elem) for elem in
-    #                                               specs["Description"]]))
-
     latent_size = specs["CodeLength"]
-    num_sequences = specs["NumSequences"]
-    # size of one reconstruction batch
-    rec_size = specs["ReconstructionSubsetSize"]
-    num_frames_per_sequence_to_reconstruct = specs["ReconstructionFramesPerSequence"]
-    reconstruction_dims = specs["ReconstructionDims"]
-    # use .MAT (False) or .HDF5 (True) to load and save SDFs
-    use_hdf5 = specs["UseHDF5"] 
-    # gzip compression level: 0 (min) ... 9 (max)
-    hdf5_compr = specs["HDF5CompressionLevel"] 
-
-    # check input
-    assert -1 <= x <= 1, "Space and time coordinates must be in [-1,1]"
-    assert -1 <= y <= 1, "Space and time coordinates must be in [-1,1]"
-    assert -1 <= z <= 1, "Space and time coordinates must be in [-1,1]"
-    assert -1 <= t <= 1, "Space and time coordinates must be in [-1,1]"
-    assert latent_code.shape == (latent_size,), "Incorrect latent code dimensions"
-    rot_ang = np.array([0, 0, 0], dtype=np.float32)
-
-    '''def signal_handler(sig, frame):
-        print("Stopping early...")
-        sys.exit(0)'''
-
-    #signal.signal(signal.SIGINT, signal_handler)
-
+    
     # load decoder
     decoder = DeepSDF(latent_size, **specs["NetworkSpecs"])
     if device == 'gpu':
@@ -90,6 +58,46 @@ def get_sdf_value(x, y, z, t, latent_code, network):
         decoder = decoder.to('cpu')
     decoder.eval() # set the dropout and batch norm layers to eval mode
     #print(decoder)
+    
+    return decoder
+
+
+def get_sdf_value(x, y, z, t, latent_code, decoder):
+    
+    
+    #print('PyTorch is computing with {}!'.format(device))
+
+    specs = load_experiment_specifications(experiment_directory)
+
+    #print("Experiment description: \n" + ' '.join([str(elem) for elem in
+    #                                               specs["Description"]]))
+
+    latent_size = specs["CodeLength"]
+    #num_sequences = specs["NumSequences"]
+    # size of one reconstruction batch
+    #rec_size = specs["ReconstructionSubsetSize"]
+    #num_frames_per_sequence_to_reconstruct = specs["ReconstructionFramesPerSequence"]
+    #reconstruction_dims = specs["ReconstructionDims"]
+    # use .MAT (False) or .HDF5 (True) to load and save SDFs
+    #use_hdf5 = specs["UseHDF5"] 
+    # gzip compression level: 0 (min) ... 9 (max)
+    #hdf5_compr = specs["HDF5CompressionLevel"] 
+
+    # check input
+    assert -1 <= x <= 1, "Space and time coordinates must be in [-1,1]"
+    assert -1 <= y <= 1, "Space and time coordinates must be in [-1,1]"
+    assert -1 <= z <= 1, "Space and time coordinates must be in [-1,1]"
+    assert -1 <= t <= 1, "Space and time coordinates must be in [-1,1]"
+    assert latent_code.shape == (latent_size,), "Incorrect latent code dimensions"
+    rot_ang = np.array([0, 0, 0], dtype=np.float32)
+
+    '''def signal_handler(sig, frame):
+        print("Stopping early...")
+        sys.exit(0)'''
+
+    #signal.signal(signal.SIGINT, signal_handler)
+
+    
                                      
     # prepare normalized time coordinates in [-1, 1]
     '''t = np.asarray([scene for scene in 
