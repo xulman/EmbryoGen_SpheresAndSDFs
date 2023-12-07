@@ -45,8 +45,7 @@ class Talker:
         msg.xyz_max_delta = delta
         for c in self.latent_code:
             msg.latent_code_elements.append(c)
-        dists = self.comm.queryBox(msg)
-        return [dist for dist in dists.sdf_outputs]
+        return self.comm.queryBox(msg)
 
 
 def assureBound(val:float) -> float:
