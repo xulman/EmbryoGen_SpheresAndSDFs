@@ -149,28 +149,40 @@ def report_SDF_cloud_surface(blender:Display, version:int, sdf_query_machine:SDF
     halfDivisor = 0.5 / float(divisor) # 1/(2*divisor)
     closeByDist = 0.10
 
-    positions = [[px/float(divisor) +halfDivisor,py/float(divisor) +halfDivisor,0.1,version/10]
-            for px in range(-divisor,divisor)
-            for py in range(-divisor,divisor)]
-    print(f"multi-query of {len(positions)} positions")
-    dists = sdf_query_machine.askMulti(positions)
+    print(f"box-query")
+    answer = sdf_query_machine.askBox(-1,1, -1,1, -1,1, version/10, 0.1)
+
     time_stop = time.time()
-    print(f"multi-query of {len(dists)} distances took {time_stop-time_start} seconds")
+    print(f"box-query of {len(answer.sdf_outputs)} distances took {time_stop-time_start} seconds")
     #print(f"distances: {dists}")
     #print(f"positions: {positions}")
 
     msg = blender.create_graphics_batch("cloud point")
-    for (pos,dist) in zip(positions,dists):
-        print(f"considering {pos} @ {dist}")
-        if -closeByDist < dist < closeByDist:
-            sphParams = PROTOCOL.SphereParameters()
-            sphParams.centre.x = pos[0]
-            sphParams.centre.y = pos[1]
-            sphParams.centre.z = pos[2]
-            sphParams.radius = 0.05
-            sphParams.time = version
-            sphParams.colorXRGB = 0xAAAAAA
-            msg.spheres.append(sphParams)
+    i = 0
+    for iz in range(answer.z_num_values):
+        z = answer.z_start + iz*answer.z_delta
+
+        for iy in range(answer.y_num_values):
+            y = answer.y_start + iy*answer.y_delta
+
+            for ix in range(answer.x_num_values):
+                x = answer.x_start + ix*answer.x_delta
+
+                pos = [x,y,z]
+                dist = answer.sdf_outputs[i]
+                print(f"considering {pos} @ {dist}")
+                if -closeByDist < dist < closeByDist:
+                    sphParams = PROTOCOL.SphereParameters()
+                    sphParams.centre.x = pos[0]
+                    sphParams.centre.y = pos[1]
+                    sphParams.centre.z = pos[2]
+                    sphParams.radius = 0.05
+                    sphParams.time = version
+                    sphParams.colorXRGB = 0xAAAAAA
+                    msg.spheres.append(sphParams)
+
+                i += 1
+
     blender.send_graphics_batch(msg, version == 0)
 
 
