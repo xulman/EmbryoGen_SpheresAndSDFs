@@ -153,24 +153,24 @@ def report_SDF_cloud_surface(blender:Display, version:int, sdf_query_machine:SDF
     answer = sdf_query_machine.askBox(-1,1, -1,1, -1,1, version/10, 0.1)
 
     time_stop = time.time()
-    print(f"box-query of {len(answer.sdf_outputs)} distances took {time_stop-time_start} seconds")
+    #print(f"box-query of {len(answer.sdf_outputs)} distances took {time_stop-time_start} seconds")
     #print(f"distances: {dists}")
     #print(f"positions: {positions}")
 
     msg = blender.create_graphics_batch("cloud point")
     i = 0
-    for iz in range(answer.z_num_values):
-        z = answer.z_start + iz*answer.z_delta
-
+    for ix in range(answer.x_num_values):
+        x = answer.x_start + ix*answer.x_delta
+                
         for iy in range(answer.y_num_values):
             y = answer.y_start + iy*answer.y_delta
-
-            for ix in range(answer.x_num_values):
-                x = answer.x_start + ix*answer.x_delta
+            
+            for iz in range(answer.z_num_values):
+                z = answer.z_start + iz*answer.z_delta
 
                 pos = [x,y,z]
                 dist = answer.sdf_outputs[i]
-                print(f"considering {pos} @ {dist}")
+                print(f"considering {pos} @ {dist:.6f}")
                 if -closeByDist < dist < closeByDist:
                     sphParams = PROTOCOL.SphereParameters()
                     sphParams.centre.x = pos[0]
@@ -183,6 +183,7 @@ def report_SDF_cloud_surface(blender:Display, version:int, sdf_query_machine:SDF
 
                 i += 1
 
+    print(f"box-query of {len(answer.sdf_outputs)} distances took {time_stop-time_start} seconds")
     blender.send_graphics_batch(msg, version == 0)
 
 
