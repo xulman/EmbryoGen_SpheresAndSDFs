@@ -24,11 +24,11 @@ class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
         for c in msg.latent_code_elements:
             ret_val.input.latent_code_elements.append(c)
 
-        # latent code as numpy array
+        # get latent code as numpy array
         code = [c for c in msg.latent_code_elements]
         code = np.array(code, dtype=np.float32)
 
-        # output
+        # get generator output
         sdf_value = sdf_gen.get_sdf_value(msg.x, msg.y, msg.z, msg.t, code, self.network)
         print(f"processing request: {msg.x},{msg.y},{msg.z},{msg.t} -> {sdf_value}, using latent_code [{code[0]}...{code[-1]}]")
 
@@ -56,19 +56,24 @@ class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
         for c in msg.latent_code_elements:
             answer.latent_code_elements.append(c)
 
-        steps = msg.xyz_intermediate_steps if msg.HasField('xyz_intermediate_steps') \
+        steps_x = msg.xyz_intermediate_steps if msg.HasField('xyz_intermediate_steps') \
                else self.getIntermediateStepsForIntervalWithDelta(msg.x_min, msg.x_max, msg.xyz_max_delta)
-        answer.x_start, answer.x_delta, answer.x_num_values = self.getStartDeltaNumValues(msg.x_min, msg.x_max, steps)
+        answer.x_start, answer.x_delta, answer.x_num_values = self.getStartDeltaNumValues(msg.x_min, msg.x_max, steps_x)
 
-        steps = msg.xyz_intermediate_steps if msg.HasField('xyz_intermediate_steps') \
+        steps_y = msg.xyz_intermediate_steps if msg.HasField('xyz_intermediate_steps') \
                else self.getIntermediateStepsForIntervalWithDelta(msg.y_min, msg.y_max, msg.xyz_max_delta)
-        answer.y_start, answer.y_delta, answer.y_num_values = self.getStartDeltaNumValues(msg.y_min, msg.y_max, steps)
+        answer.y_start, answer.y_delta, answer.y_num_values = self.getStartDeltaNumValues(msg.y_min, msg.y_max, steps_y)
 
-        steps = msg.xyz_intermediate_steps if msg.HasField('xyz_intermediate_steps') \
+        steps_z = msg.xyz_intermediate_steps if msg.HasField('xyz_intermediate_steps') \
                else self.getIntermediateStepsForIntervalWithDelta(msg.z_min, msg.z_max, msg.xyz_max_delta)
-        answer.z_start, answer.z_delta, answer.z_num_values = self.getStartDeltaNumValues(msg.z_min, msg.z_max, steps)
+        answer.z_start, answer.z_delta, answer.z_num_values = self.getStartDeltaNumValues(msg.z_min, msg.z_max, steps_z)
         answer.t = msg.t
+        
+        # steps is non-inclusive (i.e., not counting first and last value)
+        # X_num_values is inclusive
+        # X_num_values = steps+2 (+2 for the edge/side values)
 
+        '''
         xyzt_in_this_order = list()
         for iz in range(answer.z_num_values):
             z = answer.z_start + iz*answer.z_delta
@@ -80,12 +85,41 @@ class TalkerService(query_SDF_network_pb2_grpc.ClientToSDFServicer):
                     x = answer.x_start + ix*answer.x_delta
 
                     xyzt_in_this_order.append([x,y,z,answer.t])
-
-        ############ fix this ############
+        '''
+                    
+        # prepare network inputs of shape [n, 4]
+        x = np.linspace(msg.x_min, msg.x_max, num=answer.x_num_values, endpoint=True)
+        y = np.linspace(msg.y_min, msg.y_max, num=answer.y_num_values, endpoint=True)
+        z = np.linspace(msg.z_min, msg.z_max, num=answer.z_num_values, endpoint=True)
+        xyz_coords = np.stack(np.meshgrid(x, y, z, indexing='ij'), axis=-1)
+        xyz_coords = xyz_coords.reshape(-1, xyz_coords.shape[-1])
+        t_coords = np.tile(msg.t, (xyz_coords.shape[0], 1))
+        xyzt_coords = np.append(xyz_coords, t_coords, axis=1).astype(np.float32)
+        
+        # get latent code as numpy array
+        code = [c for c in msg.latent_code_elements]
+        code = np.array(code, dtype=np.float32)
+        
+        # get generator output
+        sdf_values = sdf_gen.get_sdf_values(xyzt_coords, code, self.network)
+        
+        '''
         for x,y,z,t in xyzt_in_this_order:
             print(f"positions: {x},{y},{z}")
             answer.sdf_outputs.append(x+y)
-        ############ fix this ############
+        '''
+        
+        ############ Can this be done more efficiently? ############
+        # prepare the answer    
+        for i in range(xyzt_coords.shape[0]):
+            # printing the values results in a considerable slowdown
+            '''
+            print(f'position [{xyzt_coords[i, 0]:.6f}, '
+                  f'{xyzt_coords[i, 1]:.6f}, '
+                  f'{xyzt_coords[i, 2]:.6f}] '
+                  f'@ {sdf_values[i]:.6f}')
+            '''
+            answer.sdf_outputs.append(sdf_values[i])
 
         return answer
 
